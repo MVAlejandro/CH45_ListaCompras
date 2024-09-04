@@ -1,6 +1,7 @@
 
 //* Insertar el id de los elementos de html
 const btnAgregar = document.getElementById("btnAgregar");
+const btnClear = document.getElementById("btnClear");
 const txtName = document.getElementById("Name");
 const txtNumber = document.getElementById("Number");
 const alertValidaciones = document.getElementById("alertValidaciones");
@@ -18,6 +19,8 @@ let contador = 0;
 let precio = 0;
 let costoTotal = 0;
 let totalProductos = 0;
+// Arreglo vacío, puede ser también new Array()
+let datos = [];
 
 
 //* Función para validar la cantidad
@@ -89,6 +92,12 @@ btnAgregar.addEventListener("click", function (event){
                     <td>${txtNumber.value}</td>
                     <td>${precio}</td>
                 </tr>`
+
+        // Convertir el objeto con los datos a string para guardarlos en localStorage
+        let elemento = {"contador": contador, "nombre": txtName.value, "cantidad": txtNumber.value, "precio": precio};
+        datos.push(elemento);
+        localStorage.setItem("datos", JSON.stringify(datos));
+
         cuerpoTabla.insertAdjacentHTML("beforeend", row);
 
         // Sumar precios
@@ -113,6 +122,34 @@ btnAgregar.addEventListener("click", function (event){
 }) // => FIN addEventListener de btnAgregar
 
 
+btnClear.addEventListener("click", function(event){
+    // Limpiar el valor de los campos
+    txtName.value = "";
+    txtNumber.value = "";
+    // Limpiar el localStorage (clear limpia todo, removeItem solo elementos especificados)
+    localStorage.clear();
+    // Limpiar la tabla
+    cuerpoTabla.innerHTML = "";
+
+    // Reiniciar las variables contador, costoTotal y totalProductos
+    contador = 0;
+    costoTotal = 0;
+    totalProductos = 0;
+    // Asignar las variables a los divs
+    contadorProductos.innerText = contador;
+    productosTotal.innerText = totalProductos;
+    precioTotal.innerText = "$" + costoTotal.toFixed(2);
+    // Ocultar la alerta
+    alertValidacionesTexto.innerHTML = "";
+    alertValidaciones.style.display = "none";
+    // Quitar los bordes
+    txtName.style.border = ""
+    txtNumber.style.border = ""
+    // Poner el focus en txtName
+    txtName.focus();
+}) // => FIN addEventListener de btnClear
+
+
 //* Evento para quitar espacios después de validar
 // blur es cuando un campo pierde el foco, se sale del campo
 txtName.addEventListener("blur", function(event){
@@ -124,7 +161,7 @@ txtNumber.addEventListener("blur", function(event){
 }) // => FIN addEventListener blur de txtNumber
 
 
-// Acción a realizar al abrir de nuevo la ventana
+// Acción a realizar al cargar la ventana, espera a que cargue tdo el contenido
 window.addEventListener("load", function(){
     if (this.localStorage.getItem("contador") != null){
         contador = Number(this.localStorage.getItem("contador"));
@@ -138,5 +175,17 @@ window.addEventListener("load", function(){
     contadorProductos.innerText = contador;
     productosTotal.innerText = totalProductos;
     precioTotal.innerText = "$" + costoTotal.toFixed(2);
+    if (this.localStorage.getItem("datos") != null){
+        datos = JSON.parse(this.localStorage.getItem("datos"));
+    } // => FIN !null datos
+    datos.forEach(r => {
+        let row = `<tr>
+                        <td>${r.contador}</td>
+                        <td>${r.nombre}</td>
+                        <td>${r.cantidad}</td>
+                        <td>${r.precio}</td>
+                    </tr>`;
+        cuerpoTabla.insertAdjacentHTML("beforeend", row);
+    })
 
-}) // => FIN windows load
+}) // => FIN window load
